@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>下班倒數計時器</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
     <style>
         /* Tailwind CSS CDN */
         @import url("https://cdn.tailwindcss.com");
@@ -91,6 +91,10 @@
             color: #a0aec0;
             margin-top: 0.5rem;
             text-transform: uppercase;
+        }
+        
+        .time-digit {
+            font-family: 'Roboto Mono', monospace; /* Using a monospace font for digits */
         }
 
         .quote-box {
@@ -214,7 +218,7 @@
             .time-unit {
                 font-size: 3rem;
                 padding: 1rem 1.2rem;
-                min-width: 0; /* Explicitly override min-width for mobile */
+                min-width: 80px; /* Adjust min-width for mobile */
                 width: 100%; /* Full width on small screens */
             }
             .quote-box {
@@ -242,15 +246,15 @@
         <h1 class="title">下班倒數計時</h1>
         <div id="countdownDisplay" class="countdown-display">
             <div class="time-unit">
-                <span id="hours">00</span>
+                <span id="hours" class="time-digit">00</span>
                 <div class="time-label">小時</div>
             </div>
             <div class="time-unit">
-                <span id="minutes">00</span>
+                <span id="minutes" class="time-digit">00</span>
                 <div class="time-label">分鐘</div>
             </div>
             <div class="time-unit">
-                <span id="seconds">00</span>
+                <span id="seconds" class="time-digit">00</span>
                 <div class="time-label">秒</div>
             </div>
         </div>
