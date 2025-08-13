@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>下班倒數計時器</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.2.9/Tone.js"></script>
     <style>
         /* Tailwind CSS CDN */
         @import url("https://cdn.tailwindcss.com");
@@ -67,11 +68,17 @@
             font-size: 3.5rem; /* Larger font size for digits */
             font-weight: 600;
             color: #cbd5e0; /* Lighter color for digits */
-            min-width: 100px; /* Ensure consistent width */
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), 0 2px 5px rgba(0, 0, 0, 0.2); /* Inner and outer shadow */
             position: relative;
             overflow: hidden;
             box-sizing: border-box; /* Ensures padding is included in width calculation */
+            /* New: Square shape for larger screens */
+            width: 100px;
+            height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
         .time-unit::before {
@@ -220,6 +227,7 @@
                 padding: 1rem 1.2rem;
                 min-width: 80px; /* Adjust min-width for mobile */
                 width: 100%; /* Full width on small screens */
+                height: auto; /* Remove fixed height for mobile */
             }
             .quote-box {
                 font-size: 1rem;
@@ -287,37 +295,33 @@
             "如果可以，我希望我的工作是睡覺。",
             "每天最期待的時刻，就是打卡下班。",
             "工作是為了生活，不是生活為了工作。",
-            "我與工作的關係，就像一場漫長的單戀，我愛下班，它愛我加班。",
-            "今天的工作，是為了明天更好的躺平。",
+            "我與工作的關係，就像一場單戀：我愛下班，它愛加班。",
             "我的靈魂在放假，身體在上班。",
             "錢不是萬能的，但沒錢是萬萬不能的，所以只好上班。",
             "今天不想努力，只想躺平。",
             "我的夢想是財富自由，然後把鬧鐘砸了。",
-            "上班就像一場馬拉松，終點是下班。",
-            "我不是在上班，就是在準備下班的路上。",
-            "工作再忙，也要記得呼吸，因為呼吸不用錢。",
+            "上班就像馬拉松，終點是下班。",
             "我的腦袋已經下班了，身體還在堅持。",
-            "我不是討厭工作，我只是討厭上班。",
             "下班的鈴聲，是世界上最美妙的音樂。",
             "我的興趣是下班，專長是準時離開。",
-            "工作再累，也不能忘記下班的快樂。",
             "加班，就是用老闆的錢買我的青春，我不願意。",
-            "我不是在混水摸魚，我是在努力等待下班。",
-            "薪水沒有讓我富有，但下班讓我快樂。",
-            "我的熱情，只存在於下班後。",
+            "薪水沒讓我富有，但下班讓我快樂。",
             "工作是為了付帳單，下班才是人生的開始。",
-            "我的人生只有兩個模式：上班模式和下班模式，而下班模式是我的最愛。",
-            "如果可以，我想把上班時間濃縮成下班時間。",
-            "我的工作態度是：在下班前，把所有事都做完。",
-            "我努力工作，只是為了能準時下班。",
-            "我的下班時間，比我的績效更重要。",
-            "我不是討厭上班，我只是對下班充滿了熱情。",
-            "今天的工作，是為了明天可以繼續準時下班。",
-            "下班的時鐘，是我最期待的鬧鐘。"
+            "我的生活只有兩種模式：上班模式和下班模式，下班模式才是真愛。",
+            "公文就像無底洞，簽完一份又來三份。",
+            "我的人生 KPI：不拖延下班。",
+            "每次開會都是精神減半的儀式。",
+            "電話響的時候，我的靈魂會先逃走。",
+            "在辦公室喝水不是為了健康，是為了走去廁所數一下還有多久下班。",
+            "午休是唯一的自由時光。",
+            "老闆的「快一點」通常比公文流程還慢。",
+            "行政作業就是把簡單的事變成複雜的流程。",
+            "我的日曆上只有兩個重要日子：發薪日和國定假日。"
         ];
         
         let countdownInterval;
         let targetTime = new Date(); // Initialize with a default value
+        let player; // Declare player here to be accessible globally
 
         // --- Cookie related functions ---
         function setCookie(name, value, expires) {
@@ -341,6 +345,24 @@
             return quotes[randomIndex];
         }
 
+        // Function to set and get the daily quote from cookie
+        function getDailyQuote() {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const savedQuote = getCookie('dailyQuote');
+            const savedDate = getCookie('dailyQuoteDate');
+
+            if (savedQuote && savedDate && new Date(savedDate).getTime() === today.getTime()) {
+                return savedQuote;
+            } else {
+                const newQuote = getRandomQuote();
+                const tomorrow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, 0, 0, 0);
+                setCookie('dailyQuote', newQuote, tomorrow);
+                setCookie('dailyQuoteDate', today.toISOString(), tomorrow);
+                return newQuote;
+            }
+        }
+        
         // Function to update the countdown
         function updateCountdown() {
             const now = new Date();
@@ -351,6 +373,18 @@
                 document.getElementById('countdownDisplay').style.display = 'none';
                 document.getElementById('finishedMessage').style.display = 'block';
                 clearInterval(countdownInterval); // Stop the interval
+                
+                // Play the bell sound
+                // Tone.start() must be called after a user action.
+                // In this case, since the user has interacted with the page,
+                // we can assume the AudioContext is ready.
+                if (player && Tone.context.state !== 'running') {
+                     // Ensure the AudioContext is running before trying to play
+                    Tone.start();
+                }
+                if (player) {
+                    player.start();
+                }
                 return;
             }
 
@@ -388,9 +422,24 @@
 
         // Event listener for the "Set Time" button
         document.getElementById('setTimeButton').addEventListener('click', () => {
+            // Start the audio context with a user action
+            Tone.start();
             document.getElementById('timeInputContainer').style.display = 'flex';
             document.getElementById('generateQuoteButton').style.display = 'none';
             document.getElementById('setTimeButton').style.display = 'none';
+        });
+
+        // Event listener for the "Generate Quote" button
+        document.getElementById('generateQuoteButton').addEventListener('click', () => {
+            // Start the audio context with a user action
+            Tone.start();
+            const newQuote = getRandomQuote();
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(0, 0, 0, 0);
+            setCookie('dailyQuote', newQuote, tomorrow);
+            setCookie('dailyQuoteDate', new Date().toISOString(), tomorrow);
+            document.getElementById('daily-quote').textContent = newQuote;
         });
 
         // Event listener for the "Save" button
@@ -420,13 +469,14 @@
         
         // Initial setup on page load
         document.addEventListener('DOMContentLoaded', () => {
-            // Initial display of a random quote
-            document.getElementById('daily-quote').textContent = getRandomQuote();
+            /* * IMPORTANT: For the bell.mp3 file to load correctly,
+             * it must be in the same directory as this HTML file.
+             * This path will work automatically when hosted on GitHub Pages.
+             */
+            player = new Tone.Player("bell.mp3").toDestination();
 
-            // Add event listener to the generate button
-            document.getElementById('generateQuoteButton').addEventListener('click', () => {
-                document.getElementById('daily-quote').textContent = getRandomQuote();
-            });
+            // Initial display of a daily quote
+            document.getElementById('daily-quote').textContent = getDailyQuote();
 
             // Check for existing cookie and set up the countdown
             const savedTime = getCookie('workOffTime');
